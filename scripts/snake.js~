@@ -1,0 +1,8 @@
+function generateSnake() {
+	var canvasId = "game-area";
+	var canvas = document.getElementById(canvasId);
+	var ctx = canvas.getContext("2d");
+	
+	ctx.fillStyle = "#8fe2ec";
+	ctx.fillRect(50,50,50,20);
+}

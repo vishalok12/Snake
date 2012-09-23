@@ -1,0 +1,17 @@
+html {
+  margin: 0;
+  padding: 0;
+  border: 0; }
+
+body {
+  font-family: 'PT Sans', sans-serif;
+  font-size: 16px;
+  text-decoration: none; }
+
+#game-area {
+  background: gray; }
+
+#wrapper {
+  height: 340px;
+  width: 680px;
+  background: red; }
