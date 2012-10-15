@@ -3,15 +3,16 @@
         <title>Snake Game</title>
         <link rel="stylesheet" href="styles/snake.css">
         <script src="scripts/jquery-1.7.1.min.js"></script>
+        <script src="scripts/sound.js"></script>
         <script src="scripts/snake.js"></script>
+        <script src="scripts/onload.js"></script>
     </head>
     <body onload="onload();">
         <div id="wrapper">
-        	<section>
-        		<article>
-        			<h2>Below is the game demo</h2>
-    			</article>
-			</section>
+        	<div id="main-page">
+                <div id="restart"></div>
+			</div>
+            <div id="score-board"><div class="score"></div></div>
             <canvas id="game-area" width="680" height="340">
                 Sorry, your website doesn't support canvas.
             </canvas>

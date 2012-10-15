@@ -7,7 +7,7 @@
 	var blockHeight = 20;
 	var snakeParts = [];
 	var food;
-	var nextCallId;
+	var nextRequestId;
 	var key = {
 		LEFT	: 37,
 		RIGHT	: 39,
@@ -15,23 +15,36 @@
 		DOWN	: 40
 	};
 	//Snake direction for moving
-	var dir = key.RIGHT;	//default direction
-	var dirQueue = [];
-	var INVISIBLE_WALL = true;
+	var dir;
+	var INVISIBLE_WALL = false;
 	var speed = 1;
 	var lastUpdateTime;
+	var score;
+	var paused;
 
 	window.Snake = {
 		start: function() {
+			$('#main-page').removeClass('active');
+			initialiseVariables();
 			canvas = document.getElementById(canvasId);
 			ctx = canvas.getContext("2d");
 			bindKeys();
 			paintCanvas();
+			$('.score').text(score);
+		},
+		togglePause: function() {
+			if (paused) {
+				paused = false;
+				paintCanvas();
+			} else {
+				paused = true;
+				cancelAnimationFrame(nextRequestId);
+			}
 		}
 	}
 
-	// RequestAnimFrame: a browser API for getting smooth animations
-	window.requestAnimFrame = (function() {
+	// RequestAnimationFrame: a browser API for getting smooth animations
+	window.requestAnimationFrame = (function() {
 		return window.requestAnimationFrame 
 			|| window.webkitRequestAnimationFrame 
 			|| window.mozRequestAnimationFrame 
@@ -42,6 +55,23 @@
 				 };
 	})();
 
+	window.cancelAnimationFrame = (function() {
+		return window.cancelAnimationFrame 
+			|| window.webkitCancelAnimationFrame 
+			|| window.mozCancelAnimationFrame 
+			|| window.oCancelAnimationFrame 
+			|| window.msCancelAnimationFrame 
+			|| window.clearTimeout
+	})();
+
+	function initialiseVariables() {
+		speed = 1;
+		score = 0;
+		dir = key.RIGHT;
+		dirQueue.length = 0;
+		snakeParts.length = 0;
+		paused = false;
+	}
 
 	function paintCanvas() {
 		clearCanvas();
@@ -49,12 +79,11 @@
 		generateFood();		//create food for snake
 		var currentTime = new Date().getTime();
 		lastUpdateTime = lastUpdateTime || currentTime;
-		if (currentTime - lastUpdateTime > 256/speed) {
+		if (currentTime - lastUpdateTime > ( 30 + 160 / speed ) ) {
 			lastUpdateTime = currentTime;
 			updateSnakePosition();
 		}
-		//nextCallId = setTimeout(paintCanvas, 256 / speed);
-		requestAnimFrame(paintCanvas);
+		nextRequestId = requestAnimationFrame(paintCanvas);
 	}
 
 	function generateSnake() {
@@ -118,12 +147,10 @@
 		if (!food) {
 			food = new Block( getFoodLocation() );
 			food.color = '#393661';
+			food.image = new Image();
+			food.image.src = 'images/frog.png';
 		}
-		//ctx.fillStyle = food.color;
-		var foodImage = new Image();
-		foodImage.src = 'images/frog.png';
-		// ctx.fillRect(food.x, food.y, blockWidth, blockHeight);
-		ctx.drawImage(foodImage, food.x, food.y, blockWidth, blockHeight);
+		ctx.drawImage(food.image, food.x, food.y, blockWidth, blockHeight);
 	}
 
 	function updateSnakePosition () {
@@ -158,13 +185,16 @@
 		}
 		if ( crossedBorder(newDimension) || hitBody(newDimension) ) {
 			killSnake();
+			Sound.playHit();
 			return;
 		}
-		if (foodPicked (newDimension)) {	// Snake has reached to food
+		if ( foodPicked (newDimension) ) {	// Snake has reached to food
 			//code to increase tail of the snake
 			snakeParts.unshift(new Block(newDimension));
 			food = null;
 			updateSpeed();
+			Sound.playEat();
+			getScore();
 		}else{
 			var tempBlock, i = 0;
 			//now move all the blocks to the position of it's previous block in array
@@ -231,7 +261,7 @@
 	}
 
 	function crossedBorder(snakeHeadPosition) {
-		if (!INVISIBLE_WALL && (snakeHeadPosition.x > WIDTH || snakeHeadPosition.y > HEIGHT
+		if (!INVISIBLE_WALL && (snakeHeadPosition.x >= WIDTH || snakeHeadPosition.y >= HEIGHT
 			|| snakeHeadPosition.x < 0 || snakeHeadPosition.y < 0)) {
 			return true;
 		}
@@ -240,8 +270,13 @@
 
 	function killSnake() {
 		speed = 0;
-		clearTimeout(nextCallId);
+		cancelAnimationFrame(nextRequestId);
 		unbindKeys();
+		$('#main-page').addClass('active');
+		if( !!localStorage && (localStorage['highestScore'] == undefined 
+			|| localStorage['highestScore'] < score) ) {
+				localStorage['highestScore'] = score;
+		}
 	}
 
 	function hitBody(snakeHeadPosition) {
@@ -251,19 +286,21 @@
 		return commonPart.length ? true : false;
 	}
 
-	function bindKeys() {
-		$('body').keydown(function(e) {
-			if ( [37, 38, 39, 40].indexOf(e.keyCode) == -1 ) { return; }
+	var getScore = (function() {
+		var lastPrizeTime;
 
-			dirQueue.push(e.keyCode);
-		});
-	}
+		return function () {
+			var currentPrizeTime = new Date().getTime();
+			if (lastPrizeTime) {
+				// console.log( currentPrizeTime - lastPrizeTime );
 
-	function unbindKeys() {
-		$('body').unbind('keydown');
-	}
+				score = score + 10;
+				$('.score').text(score);
+			} else {
+				score = 10;
+				$('.score').text(10);
+			}
+			lastPrizeTime = currentPrizeTime;
+		}
+	})();
 })()
-
-function onload() {
-	Snake.start();
-}
