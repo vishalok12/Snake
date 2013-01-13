@@ -4,9 +4,11 @@ html {
   border: 0; }
 
 body {
+  margin: 0;
   font-family: 'PT Sans', sans-serif;
   font-size: 16px;
-  text-decoration: none; }
+  text-decoration: none;
+  color: white; }
 
 #game-area {
   background: gray; }
@@ -38,15 +40,19 @@ body {
   background: red; }
 
 #score-board {
-  background: url("../images/score-board.png") no-repeat;
+  background: #3A382D;
   background-size: 100%;
-  width: 135px;
-  height: 88px;
+  width: 680px;
+  height: 60px;
   position: absolute;
-  top: 260px;
-  left: 688px; }
+  top: 340px;
+  left: 0;
+  z-index: -1; }
   #score-board .score {
-    text-align: center;
+    text-align: right;
     color: white;
     font-size: 36px;
-    line-height: 80px; }
+    padding-right: 10px; }
+    #score-board .score::before {
+      content: 'score: ';
+      font-size: 46px; }
